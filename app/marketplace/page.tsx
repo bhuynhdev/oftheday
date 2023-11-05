@@ -14,10 +14,8 @@ export default withPageAuthRequired(
     const session = await getSession();
 
     if (!session) {
-      return null;
+      return <></>;
     }
-
-    console.log("SESS", session);
 
     const data = await db
       .select()
