@@ -1,6 +1,6 @@
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
-import { inspirations as inspirationsTable } from "./schema";
+import { inspiration_owners, inspirations as inspirationsTable } from "./schema";
 import * as dotenv from "dotenv";
 dotenv.config({ path: "./.env.local" });
 
@@ -18,10 +18,13 @@ async function main() {
   ];
   const data: (typeof inspirationsTable.$inferInsert)[] = inspirations_seeds.map((text) => ({
     prompt: text,
+    content:
+      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
   }));
 
   console.log("Seed start");
   await db.delete(inspirationsTable);
+  await db.delete(inspiration_owners);
   await db.insert(inspirationsTable).values(data).returning();
 
   console.log("Seed done");

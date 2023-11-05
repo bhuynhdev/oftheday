@@ -1,9 +1,11 @@
 import { relations, sql } from "drizzle-orm";
-import { integer, pgEnum, pgTable, serial, uniqueIndex, uuid, varchar } from 'drizzle-orm/pg-core';
+import { pgTable, text, uuid, varchar } from 'drizzle-orm/pg-core';
 
 export const inspirations = pgTable('inspirations', {
   id: uuid('id').default(sql`gen_random_uuid()`).primaryKey(),
-  prompt: varchar('prompt', { length: 256 }),
+  prompt: text("prompt"),
+  content: text("content"),
+
 });
 
 export const inspiration_owners = pgTable('inspiration_owners', {

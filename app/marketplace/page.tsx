@@ -77,16 +77,12 @@ export default withPageAuthRequired(
           </div>
         </div>
         <ul className="flex flex-wrap items-center justify-center gap-12">
-          {allInspirations.map(({ id, prompt }) => {
+          {allInspirations.map(({ id, prompt, content }) => {
             return (
               <li>
                 <div className="w-80 overflow-hidden rounded-lg bg-slate-500">
                   <p className="bg-slate-600 p-4">{prompt}</p>
-                  <p className="p-4">
-                    Lorem ipsum dolor, sit amet consectetur adipisicing elit. Eum laboriosam
-                    molestias eius at voluptate praesentium assumenda reprehenderit, distinctio hic
-                    sed!
-                  </p>
+                  <p className="p-4">{content}</p>
                   {ownedInspirations.map((i) => i.inspirationId).includes(id) ? (
                     <form
                       className="flex items-center justify-between p-4"
