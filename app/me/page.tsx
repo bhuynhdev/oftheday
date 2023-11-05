@@ -14,6 +14,7 @@ export default async function Me() {
     .select({
       id: inspirations.id,
       prompt: inspirations.prompt,
+      content: inspirations.content,
     })
     .from(inspiration_owners)
     .innerJoin(inspirations, eq(inspiration_owners.inspirationId, inspirations.id))
