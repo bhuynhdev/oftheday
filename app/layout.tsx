@@ -11,7 +11,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <UserProvider>
-        <body>{children}</body>
+        <body>
+          <header>
+            <nav>
+              <a href="/api/auth/logout" className="bg-rose-500 px-4 py-2">
+                Log out
+              </a>
+            </nav>
+          </header>
+          {children}
+        </body>
       </UserProvider>
     </html>
   );
