@@ -76,7 +76,7 @@ export default withPageAuthRequired(
             </Link>
           </div>
         </div>
-        <ul className="flex flex-wrap items-center justify-center gap-12">
+        <ul className="flex flex-wrap justify-center gap-12">
           {allInspirations.map(({ id, prompt, content }) => {
             return (
               <li>

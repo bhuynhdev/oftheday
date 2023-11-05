@@ -22,14 +22,11 @@ export default async function Me() {
   return (
     <main className="flex flex-col items-center justify-between gap-16 p-6 md:p-16">
       <ul className="flex flex-col gap-12">
-        {ownedInspirations.map(({ id, prompt }) => (
+        {ownedInspirations.map(({ id, prompt, content }) => (
           <li key={id}>
             <div className="w-80 overflow-hidden rounded-lg bg-slate-500">
               <p className="bg-slate-600 p-4">{prompt}</p>
-              <p className="p-4">
-                Lorem ipsum dolor, sit amet consectetur adipisicing elit. Eum laboriosam molestias
-                eius at voluptate praesentium assumenda reprehenderit, distinctio hic sed!
-              </p>
+              <p className="p-4">{content}</p>
             </div>
           </li>
         ))}
