@@ -1,6 +1,26 @@
-import { integer, pgEnum, pgTable, serial, uniqueIndex, varchar } from 'drizzle-orm/pg-core';
+import { relations, sql } from "drizzle-orm";
+import { integer, pgEnum, pgTable, serial, uniqueIndex, uuid, varchar } from 'drizzle-orm/pg-core';
 
-export const extensions = pgTable('extensions', {
-  id: serial('id').primaryKey(),
-  prompt: varchar('name', { length: 256 }),
+export const inspirations = pgTable('inspirations', {
+  id: uuid('id').default(sql`gen_random_uuid()`).primaryKey(),
+  prompt: varchar('prompt', { length: 256 }),
 });
+
+export const inspiration_owners = pgTable('inspiration_owners', {
+  id: uuid('id').default(sql`gen_random_uuid()`).primaryKey(),
+  userId: varchar('userId', {length: 256}),
+  inspirationId: uuid('inspirationId')
+});
+
+export const inspirationRelations = relations(inspirations, ({ many }) => ({
+	owners: many(inspiration_owners)
+}));
+
+export const ownershipRelations = relations(inspiration_owners, ({ one }) => ({
+	sourceInspiration: one(inspirations, {
+    fields: [inspiration_owners.inspirationId],
+    references: [inspirations.id]
+  })
+}));
+
+export type Inspiration = typeof inspirations.$inferSelect;

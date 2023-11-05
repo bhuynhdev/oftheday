@@ -1,9 +1,12 @@
 import { db } from "@/drizzle/drizzle";
-import { extensions } from "@/drizzle/schema";
-import { getSession, withPageAuthRequired } from "@auth0/nextjs-auth0";
-import { like } from "drizzle-orm";
+import { Inspiration, inspiration_owners, inspirations } from "@/drizzle/schema";
+import { getSession, withPageAuthRequired, handleProfile, handleLogin } from "@auth0/nextjs-auth0";
+import { eq, like } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import Image from "next/image";
+import { addMetadataToUser } from "../auth0-management/auth0-management";
+import { useOptimistic, useState } from "react";
+// import { ExtensionList } from "./ExtensionList";
 
 export default withPageAuthRequired(
   async function Marketplace({
@@ -17,16 +20,30 @@ export default withPageAuthRequired(
       return <></>;
     }
 
-    const data = await db
+    const allInspirations = await db
       .select()
-      .from(extensions)
-      .where(like(extensions.prompt, `%${searchParams?.q || ""}%`));
+      .from(inspirations)
+      .where(like(inspirations.prompt, `%${searchParams?.q || ""}%`));
 
-    async function insertExtension(formData: FormData) {
+    const ownedInspirations = await db
+      .select()
+      .from(inspiration_owners)
+      .where(eq(inspiration_owners.userId, session.user.sub));
+
+    async function createNewExtension(formData: FormData) {
       "use server";
-      const result = await db.insert(extensions).values({ prompt: "Hehe" }).returning();
+      const result = await db.insert(inspirations).values({ prompt: "Hehe" }).returning();
       revalidatePath("/");
       return result;
+    }
+
+    async function buyExtension(formData: FormData) {
+      "use server";
+      const inspirationId = formData.get("id") as string;
+      await db
+        .insert(inspiration_owners)
+        .values({ userId: session?.user.sub, inspirationId: inspirationId });
+      revalidatePath("/");
     }
 
     return (
@@ -47,7 +64,7 @@ export default withPageAuthRequired(
           </form>
           <div>
             <p className="mb-4 text-xl">OR</p>
-            <form action={insertExtension}>
+            <form action={createNewExtension}>
               <button type="submit" className="w-56 rounded-xl bg-rose-800 px-4 py-2">
                 Contribute your own inspiration
               </button>
@@ -55,7 +72,7 @@ export default withPageAuthRequired(
           </div>
         </div>
         <ul className="flex flex-wrap items-center justify-center gap-12">
-          {data.map(({ prompt }) => {
+          {allInspirations.map(({ id, prompt }) => {
             return (
               <li>
                 <div className="w-80 overflow-hidden rounded-lg bg-slate-500">
@@ -66,20 +83,33 @@ export default withPageAuthRequired(
                     sed!
                   </p>
                   {/* <div>
-                  <ul className="flex gap-2 p-4">
-                    {tags.map((tag) => (
-                      <li className="rounded-md bg-gray-600 px-3 py-1 text-sm">{tag}</li>
-                    ))}
-                  </ul>
-                </div> */}
-                  <form className="flex justify-end p-4">
-                    <button
-                      type="submit"
-                      className="rounded-md bg-slate-800 px-4 py-2 hover:opacity-70"
-                    >
-                      Add
-                    </button>
-                  </form>
+          <ul className="flex gap-2 p-4">
+            {tags.map((tag) => (
+              <li className="rounded-md bg-gray-600 px-3 py-1 text-sm">{tag}</li>
+            ))}
+          </ul>
+        </div> */}
+                  {ownedInspirations.map((i) => i.inspirationId).includes(id) ? (
+                    <div className="flex justify-end p-4">
+                      <button
+                        disabled
+                        className="cursor-not-allowed rounded-md bg-slate-600 px-4 py-2 hover:opacity-70"
+                      >
+                        Owned
+                      </button>
+                    </div>
+                  ) : (
+                    <form className="flex justify-end p-4" action={buyExtension}>
+                      <button
+                        type="submit"
+                        className="rounded-md bg-slate-800 px-4 py-2 hover:opacity-70"
+                        name="id"
+                        value={id}
+                      >
+                        Add
+                      </button>
+                    </form>
+                  )}
                 </div>
               </li>
             );
