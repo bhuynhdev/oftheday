@@ -1,12 +1,8 @@
 import { db } from "@/drizzle/drizzle";
-import { Inspiration, inspiration_owners, inspirations } from "@/drizzle/schema";
-import { getSession, withPageAuthRequired, handleProfile, handleLogin } from "@auth0/nextjs-auth0";
-import { eq, like } from "drizzle-orm";
+import { inspiration_owners, inspirations } from "@/drizzle/schema";
+import { getSession, withPageAuthRequired } from "@auth0/nextjs-auth0";
+import { and, eq, ilike } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
-import Image from "next/image";
-import { addMetadataToUser } from "../auth0-management/auth0-management";
-import { useOptimistic, useState } from "react";
-// import { ExtensionList } from "./ExtensionList";
 
 export default withPageAuthRequired(
   async function Marketplace({
@@ -23,7 +19,7 @@ export default withPageAuthRequired(
     const allInspirations = await db
       .select()
       .from(inspirations)
-      .where(like(inspirations.prompt, `%${searchParams?.q || ""}%`));
+      .where(ilike(inspirations.prompt, `%${searchParams?.q || ""}%`));
 
     const ownedInspirations = await db
       .select()
@@ -46,10 +42,24 @@ export default withPageAuthRequired(
       revalidatePath("/");
     }
 
+    async function removeExtension(formData: FormData) {
+      "use server";
+      const inspirationId = formData.get("id") as string;
+      await db
+        .delete(inspiration_owners)
+        .where(
+          and(
+            eq(inspiration_owners.userId, session?.user.sub),
+            eq(inspiration_owners.inspirationId, inspirationId),
+          ),
+        );
+      revalidatePath("/");
+    }
+
     return (
       <main className="flex flex-col items-center justify-between gap-16 p-6 md:p-16">
         <h1 className="text-4xl font-bold">Marketplace</h1>
-        <div className="flex w-full items-center justify-evenly">
+        <div className="flex w-full flex-col items-center justify-evenly gap-5 md:flex-row md:gap-2">
           <form method="GET">
             <div className="flex flex-col gap-2">
               <label htmlFor="query">Search for a new inspiration</label>
@@ -63,7 +73,7 @@ export default withPageAuthRequired(
             </div>
           </form>
           <div>
-            <p className="mb-4 text-xl">OR</p>
+            <p className="mb-4 text-center text-xl md:text-left">OR</p>
             <form action={createNewExtension}>
               <button type="submit" className="w-56 rounded-xl bg-rose-800 px-4 py-2">
                 Contribute your own inspiration
@@ -82,22 +92,21 @@ export default withPageAuthRequired(
                     molestias eius at voluptate praesentium assumenda reprehenderit, distinctio hic
                     sed!
                   </p>
-                  {/* <div>
-          <ul className="flex gap-2 p-4">
-            {tags.map((tag) => (
-              <li className="rounded-md bg-gray-600 px-3 py-1 text-sm">{tag}</li>
-            ))}
-          </ul>
-        </div> */}
                   {ownedInspirations.map((i) => i.inspirationId).includes(id) ? (
-                    <div className="flex justify-end p-4">
+                    <form
+                      className="flex items-center justify-between p-4"
+                      action={removeExtension}
+                    >
+                      <p className="text-sm text-gray-100">Owned</p>
                       <button
-                        disabled
-                        className="cursor-not-allowed rounded-md bg-slate-600 px-4 py-2 hover:opacity-70"
+                        type="submit"
+                        className="rounded-md bg-rose-600 px-4 py-2 hover:opacity-70"
+                        name="id"
+                        value={id}
                       >
-                        Owned
+                        Remove
                       </button>
-                    </div>
+                    </form>
                   ) : (
                     <form className="flex justify-end p-4" action={buyExtension}>
                       <button
