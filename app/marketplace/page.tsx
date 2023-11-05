@@ -3,6 +3,7 @@ import { inspiration_owners, inspirations } from "@/drizzle/schema";
 import { getSession, withPageAuthRequired } from "@auth0/nextjs-auth0";
 import { and, eq, ilike } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import Link from "next/link";
 
 export default withPageAuthRequired(
   async function Marketplace({
@@ -25,13 +26,6 @@ export default withPageAuthRequired(
       .select()
       .from(inspiration_owners)
       .where(eq(inspiration_owners.userId, session.user.sub));
-
-    async function createNewExtension(formData: FormData) {
-      "use server";
-      const result = await db.insert(inspirations).values({ prompt: "Hehe" }).returning();
-      revalidatePath("/");
-      return result;
-    }
 
     async function buyExtension(formData: FormData) {
       "use server";
@@ -74,11 +68,12 @@ export default withPageAuthRequired(
           </form>
           <div>
             <p className="mb-4 text-center text-xl md:text-left">OR</p>
-            <form action={createNewExtension}>
-              <button type="submit" className="w-56 rounded-xl bg-rose-800 px-4 py-2">
-                Contribute your own inspiration
-              </button>
-            </form>
+            <Link
+              href="contribute"
+              className="block w-56 rounded-xl bg-rose-800 px-4 py-2 text-center"
+            >
+              Contribute your own inspiration
+            </Link>
           </div>
         </div>
         <ul className="flex flex-wrap items-center justify-center gap-12">
