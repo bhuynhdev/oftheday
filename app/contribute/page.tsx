@@ -2,7 +2,7 @@ import { db } from "@/drizzle/drizzle";
 import { inspirations } from "@/drizzle/schema";
 import { redirect } from "next/navigation";
 import Completion from "./Completion";
-import { openaiInstance } from "../api/completion/route";
+import { openaiInstance } from "@/lib/openai";
 
 export default function Contribute() {
   async function createNewExtension(formData: FormData) {

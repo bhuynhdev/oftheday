@@ -1,7 +1,7 @@
-import { OpenAI } from "openai";
 import { OpenAIStream, StreamingTextResponse } from "ai";
 
-export const openaiInstance = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
+import { openaiInstance } from "@/lib/openai";
+
 
 export async function POST(req: Request) {
   // Extract the `prompt` from the body of the request

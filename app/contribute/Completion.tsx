@@ -1,9 +1,9 @@
 "use client";
 
 import { useCompletion } from "ai/react";
-import { useRef, useState } from "react";
+import { useRef } from "react";
 
-export default function Completion(props) {
+export default function Completion(props: { createNewExtension: (f: FormData) => Promise<void> }) {
   const { completion, complete } = useCompletion({
     api: "/api/completion",
   });
